@@ -4,6 +4,7 @@ import express, { json, urlencoded } from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import client from './database';
+import routes from './routes';
 
 const { PORT } = process.env;
 // create express app
@@ -14,6 +15,9 @@ app.use(morgan('dev'));
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Routes
+routes(app);
 
 // Handle all Requests not handled by all designated routes
 app.use((req, res, next) => {
