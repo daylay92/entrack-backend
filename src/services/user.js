@@ -1,4 +1,4 @@
-import UserModel from '../models';
+import { User as UserModel } from '../models';
 import client from '../database';
 
 /**
@@ -14,13 +14,17 @@ class UserService extends UserModel {
  */
   async save() {
     const { id, email, password, lastName, firstName, createdAt } = this;
-    const userData = { id, firstName, lastName, email, createdAt };
+    const userData = { id, firstName, lastName, email: email.toLowerCase(), createdAt };
     const user = `user:${id}`;
-    const credential = `email:${email}`;
+    const credential = `email:${email.toLowerCase()}`;
     const credentialValue = { id, password };
-    await client.multi().hmset(user, userData).sadd('users', id).hmset(credential, credentialValue)
-      .execAsync();
-    return client.hgetallAsync(user);
+    try {
+      await client.multi().hmset(user, userData).sadd('users', id).hmset(credential, credentialValue)
+        .execAsync();
+      return client.hgetallAsync(user);
+    } catch (e) {
+      throw Error(e.message || 'Failed to create User');
+    }
   }
 
   /**
@@ -42,11 +46,34 @@ class UserService extends UserModel {
    * @memberof UserService
    */
   static async fetchByEmail(email) {
-    const key = `email:${email}`;
-    const credential = await client.hgetallAsync(key);
-    if (!credential) return null;
-    const user = await UserService.fetchById(credential.id);
-    return [credential, user];
+    const key = `email:${email.toLowerCase()}`;
+    try {
+      const credential = await client.hgetallAsync(key);
+      if (!credential) return null;
+      const user = await UserService.fetchById(credential.id);
+      return [credential, user];
+    } catch (e) {
+      throw Error('Failed to fetch User by Email');
+    }
+  }
+
+  /**
+   * Check if an array of an email addresses belongs to registered users.
+   * @param {array} addresses - User's email address
+   * @returns {Promise<array> } A promise object with a two part array,
+   * containing the boolean result of the check and the team array
+   * @memberof UserService
+   */
+  static async checkRegistered(addresses) {
+    let isRegistered = false;
+    const members = addresses.map(async memberEmail => UserService.fetchByEmail(memberEmail));
+    try {
+      const teamMembers = await Promise.all(members);
+      isRegistered = teamMembers.some(member => member === null);
+      return [!isRegistered, teamMembers];
+    } catch (e) {
+      throw Error(e.message || 'Failed to confirm registration status of users');
+    }
   }
 }
 

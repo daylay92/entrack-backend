@@ -1,3 +1,6 @@
 import AuthController from './auth';
+import ProjectController from './project';
+import UserController from './user';
 
-export default AuthController;
+
+export { AuthController, ProjectController, UserController };

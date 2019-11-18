@@ -1,3 +1,5 @@
 import validateAuthSchema from './auth';
+import validateProjectSchema from './project';
 
-export default validateAuthSchema;
+export { createSchema, updateSchema, teamSchema } from './project';
+export { validateAuthSchema, validateProjectSchema };

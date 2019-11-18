@@ -1,8 +1,8 @@
-import validateAuthSchema from '../validations';
+import { validateAuthSchema } from '../validations';
 import Helpers from '../utils';
-import User from '../services';
+import { User } from '../services';
 
-const { fetchByEmail } = User;
+const { fetchByEmail, fetchById } = User;
 const { errorResponse, verifyToken, checkToken } = Helpers;
 
 /**
@@ -14,6 +14,7 @@ const { errorResponse, verifyToken, checkToken } = Helpers;
 class AuthMiddleware {
   /**
    * Validates user's registration data.
+   * @static
    * @param {object} req - The request from the endpoint.
    * @param {object} res - The response returned by the method.
    * @param {function} next - Call the next operation.
@@ -32,6 +33,7 @@ class AuthMiddleware {
 
   /**
    * Checks if the email of the new user already exists.
+   * @static
    * @param {object} req - The request from the endpoint.
    * @param {object} res - The response returned by the method.
    * @param {function} next - Call the next operation.
@@ -57,6 +59,7 @@ class AuthMiddleware {
 
   /**
    * Validates user's login credentials.
+   * @static
    * @param {object} req - The request from the endpoint.
    * @param {object} res - The response returned by the method.
    * @param {function} next - Call the next operation.
@@ -78,6 +81,7 @@ class AuthMiddleware {
   /**
    * Validates user's login credentials, with emphasis on the
    * existance of a user with the provided email address.
+   * @static
    * @param {object} req - The request from the endpoint.
    * @param {object} res - The response returned by the method.
    * @param {function} next - Call the next operation.
@@ -103,7 +107,35 @@ class AuthMiddleware {
   }
 
   /**
-   * Verifies the validity of a user's access token or and the presence of it
+   * Verify that user Id in params belongs to an existing user.
+   * @static
+   * @param {object} req - The request from the endpoint.
+   * @param {object} res - The response returned by the method.
+   * @param {function} next - Call the next operation.
+   *@returns {object} - Returns an object (error or response).
+   * @memberof AuthMiddleware
+   *
+   */
+  static async validUserId(req, res, next) {
+    try {
+      const { userId, memberId } = req.params;
+      const user = await fetchById(userId || memberId);
+      if (!user) {
+        return errorResponse(res, {
+          code: 400,
+          message: 'The memberId/UserId specified does not belong to an existing user'
+        });
+      }
+      req.user = user;
+      next();
+    } catch (e) {
+      errorResponse(res, {});
+    }
+  }
+
+  /**
+   * Verifies the validity of a user's access token or and the presence of it.
+   * @static
    * @param {object} req - The request from the endpoint.
    * @param {object} res - The response returned by the method.
    * @param {function} next - Call the next operation.

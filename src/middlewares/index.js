@@ -1,3 +1,4 @@
 import AuthMiddleware from './authMiddleware';
+import ProjectMiddleware from './projectMiddleware';
 
-export default AuthMiddleware;
+export { AuthMiddleware, ProjectMiddleware };
