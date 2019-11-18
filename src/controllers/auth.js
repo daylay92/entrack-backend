@@ -1,5 +1,5 @@
 import uuidv4 from 'uuid/v4';
-import User from '../services';
+import { User } from '../services';
 import Helpers from '../utils';
 
 const { errorResponse, successResponse, addTokenToRes, comparePassword } = Helpers;

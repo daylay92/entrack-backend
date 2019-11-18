@@ -158,6 +158,37 @@ class Helpers {
     }
     return null;
   }
+
+  /**
+   * It extracts the properties to be used for an updated from the
+   * body and transforms it to the required format.
+   * @static
+   * @param {object} body - Request's body object.
+   * @memberof Helpers
+   * @returns { array } - An array of properties to update an instance with.
+   */
+  static prepForUpdate(body) {
+    const keys = Object.keys(body);
+    const res = [...Array(keys.length * 2)].fill(2);
+    return res.reduce((prev, emp, index) => {
+      const val = index % 2 === 0 ? keys[index / 2] : body[prev[index - 1]];
+      prev.push(val);
+      return prev;
+    }, []);
+  }
+
+  /**
+   * It extracts the team data from the request body and formats it.
+   * @static
+   * @param {object} body - Request's body object.
+   * @memberof Helpers
+   * @returns { array } - An array of user's email address.
+   */
+  static prepTeamData(body) {
+    const { team: teamData } = body;
+    const team = teamData || [];
+    return Array.isArray(team) ? team : [team];
+  }
 }
 
 export default Helpers;
